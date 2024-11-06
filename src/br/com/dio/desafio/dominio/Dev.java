@@ -7,36 +7,41 @@ public class Dev {
     private Set<Conteudo> conteudosInscritos = new LinkedHashSet<>();
     private Set<Conteudo> conteudosConcluidos = new LinkedHashSet<>();
 
-    public void inscreverBootcamp(Bootcamp bootcamp){
+    public void inscreverBootcamp(Bootcamp bootcamp) {
+        if (bootcamp.getConteudos().isEmpty()) {
+            System.err.println("O Bootcamp não possui conteúdos para inscrição!");
+            return;
+        }
+
         this.conteudosInscritos.addAll(bootcamp.getConteudos());
-        bootcamp.getDevsInscritos().add(this);
+        bootcamp.adicionarDev(this); 
+
+        System.out.println(this.nome + " está inscrito nos seguintes conteúdos:");
+        this.conteudosInscritos.forEach(conteudo -> System.out.println(conteudo.getTitulo()));
     }
 
+   
     public void progredir() {
-        Optional<Conteudo> conteudo = this.conteudosInscritos.stream().findFirst();
-        if(conteudo.isPresent()) {
-            this.conteudosConcluidos.add(conteudo.get());
-            this.conteudosInscritos.remove(conteudo.get());
+        // Verifica se o dev tem conteúdos inscritos
+        if (!this.conteudosInscritos.isEmpty()) {
+            // Pega o primeiro conteúdo da lista de inscritos (mas podemos melhorar isso se quiser usar mais lógica)
+            Iterator<Conteudo> iterator = this.conteudosInscritos.iterator();
+            if (iterator.hasNext()) {
+                Conteudo conteudo = iterator.next(); // Pega o primeiro conteúdo
+                this.conteudosConcluidos.add(conteudo); // Marca como concluído
+                this.conteudosInscritos.remove(conteudo); // Remove da lista de inscritos
+            }
         } else {
             System.err.println("Você não está matriculado em nenhum conteúdo!");
         }
     }
 
     public double calcularTotalXp() {
-        Iterator<Conteudo> iterator = this.conteudosConcluidos.iterator();
-        double soma = 0;
-        while(iterator.hasNext()){
-            double next = iterator.next().calcularXp();
-            soma += next;
-        }
-        return soma;
-
-        /*return this.conteudosConcluidos
-                .stream()
-                .mapToDouble(Conteudo::calcularXp)
-                .sum();*/
+        return this.conteudosConcluidos
+            .stream()
+            .mapToDouble(Conteudo::calcularXp)
+            .sum();
     }
-
 
     public String getNome() {
         return nome;
@@ -50,16 +55,8 @@ public class Dev {
         return conteudosInscritos;
     }
 
-    public void setConteudosInscritos(Set<Conteudo> conteudosInscritos) {
-        this.conteudosInscritos = conteudosInscritos;
-    }
-
     public Set<Conteudo> getConteudosConcluidos() {
         return conteudosConcluidos;
-    }
-
-    public void setConteudosConcluidos(Set<Conteudo> conteudosConcluidos) {
-        this.conteudosConcluidos = conteudosConcluidos;
     }
 
     @Override
@@ -67,7 +64,9 @@ public class Dev {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Dev dev = (Dev) o;
-        return Objects.equals(nome, dev.nome) && Objects.equals(conteudosInscritos, dev.conteudosInscritos) && Objects.equals(conteudosConcluidos, dev.conteudosConcluidos);
+        return Objects.equals(nome, dev.nome) &&
+                Objects.equals(conteudosInscritos, dev.conteudosInscritos) &&
+                Objects.equals(conteudosConcluidos, dev.conteudosConcluidos);
     }
 
     @Override
